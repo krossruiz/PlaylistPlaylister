@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 export default async function PlaylistPage({ params }) {
     const { id } = await params;
-    const playlist = getPlaylistById(id);
+    const playlist = await getPlaylistById(id);
 
     if (!playlist) {
         notFound();

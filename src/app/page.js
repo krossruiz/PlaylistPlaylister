@@ -4,8 +4,14 @@ import { getPlaylists } from '@/lib/db';
 // Force dynamic rendering to ensure we always get the latest playlists
 export const dynamic = 'force-dynamic';
 
-export default function Home() {
-    const playlists = getPlaylists();
+export default async function Home() {
+    let playlists = [];
+    try {
+        playlists = await getPlaylists();
+    } catch (error) {
+        console.error('Failed to fetch playlists:', error);
+        // Fallback to empty array or handle error UI
+    }
 
     return (
         <main className="container">
