@@ -1,66 +1,35 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import { getPlaylists } from '@/lib/db';
+
+// Force dynamic rendering to ensure we always get the latest playlists
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    const playlists = getPlaylists();
+
+    return (
+        <main className="container">
+            <header className="header">
+                <h1>Video Playlists</h1>
+                <Link href="/create" className="btn">
+                    Create New Playlist
+                </Link>
+            </header>
+
+            <div className="playlist-list">
+                {playlists.length === 0 ? (
+                    <p>No playlists found. Be the first to create one!</p>
+                ) : (
+                    playlists.map((playlist) => (
+                        <Link href={`/playlist/${playlist.id}`} key={playlist.id} className="card" style={{ display: 'block' }}>
+                            <h2 style={{ margin: '0 0 0.5rem 0' }}>{playlist.title}</h2>
+                            <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
+                                Created: {new Date(playlist.created_at * 1000).toLocaleDateString()}
+                            </p>
+                        </Link>
+                    ))
+                )}
+            </div>
+        </main>
+    );
 }
