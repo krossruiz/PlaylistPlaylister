@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPlaylists, createPlaylist } from '@/lib/db';
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 
 export async function GET() {
     try {
@@ -20,9 +20,16 @@ export async function POST(request) {
         }
 
         // Allow iframes for YouTube and video tags for IPFS
-        const cleanContent = DOMPurify.sanitize(content, {
-            ADD_TAGS: ['iframe', 'video', 'source'],
-            ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'controls', 'type', 'poster', 'preload']
+        const cleanContent = sanitizeHtml(content, {
+            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['iframe', 'video', 'source', 'img']),
+            allowedAttributes: {
+                ...sanitizeHtml.defaults.allowedAttributes,
+                iframe: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'scrolling'],
+                video: ['src', 'width', 'height', 'controls', 'poster', 'preload'],
+                source: ['src', 'type'],
+                img: ['src', 'alt', 'width', 'height']
+            },
+            allowedSchemes: ['http', 'https', 'mailto', 'tel']
         });
 
         const { id } = await createPlaylist(title, cleanContent);
