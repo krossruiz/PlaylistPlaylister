@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPlaylists, createPlaylist } from '@/lib/db';
-import createDOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
+import DOMPurify from 'isomorphic-dompurify';
 
 export async function GET() {
     try {
@@ -19,9 +18,6 @@ export async function POST(request) {
         if (!title || !content) {
             return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
         }
-
-        const window = new JSDOM('').window;
-        const DOMPurify = createDOMPurify(window);
 
         // Allow iframes for YouTube and video tags for IPFS
         const cleanContent = DOMPurify.sanitize(content, {
