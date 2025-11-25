@@ -4,7 +4,7 @@ import { getPlaylistById } from '@/lib/db';
 export async function GET(request, { params }) {
     try {
         const { id } = await params;
-        const playlist = getPlaylistById(id);
+        const playlist = await getPlaylistById(id);
 
         if (!playlist) {
             return NextResponse.json({ error: 'Playlist not found' }, { status: 404 });
