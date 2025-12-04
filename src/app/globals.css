@@ -113,8 +113,8 @@ div.form-control video {
     max-width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
-    display: inline-block;
-    vertical-align: middle;
+    display: block;
+    margin: 1rem 0;
 }
 
 .playlist-content {
