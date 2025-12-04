@@ -34,3 +34,45 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deployment Workflow
+
+### Pushing Updates to Vercel
+
+This project is deployed on Vercel. To push your latest changes to the live site, simply commit your changes and push them to the repository:
+
+```bash
+git add .
+git commit -m "Your commit message"
+git push
+```
+
+Vercel will automatically detect the push and start a new deployment.
+
+### Environment Variables & Database
+
+This project uses Vercel Postgres. To run the project locally with the same database connection as your Vercel deployment:
+
+1.  **Install Vercel CLI**:
+    ```bash
+    npm i -g vercel
+    ```
+
+2.  **Link Project**:
+    If you haven't already, link your local folder to your Vercel project:
+    ```bash
+    vercel link
+    ```
+
+3.  **Pull Environment Variables**:
+    Download the latest environment variables (including `POSTGRES_URL`) from Vercel to your local `.env.local` file:
+    ```bash
+    vercel env pull .env.local
+    ```
+
+4.  **Run Locally**:
+    Start the development server. It will now use the Vercel Postgres database.
+    ```bash
+    npm run dev
+    ```
+

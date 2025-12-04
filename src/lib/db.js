@@ -64,3 +64,25 @@ export async function getPlaylistById(id) {
     throw error;
   }
 }
+
+export async function updatePlaylist(id, title, content) {
+  try {
+    await sql`
+      UPDATE playlists
+      SET title = ${title}, content = ${content}
+      WHERE id = ${id}
+    `;
+    return { id };
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deletePlaylist(id) {
+  try {
+    await sql`DELETE FROM playlists WHERE id = ${id}`;
+    return { id };
+  } catch (error) {
+    throw error;
+  }
+}

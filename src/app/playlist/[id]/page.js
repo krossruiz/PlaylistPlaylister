@@ -1,6 +1,8 @@
 import { getPlaylistById } from '@/lib/db';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import PlaylistActions from './PlaylistActions';
+import { BASE_URL } from '@/lib/utils';
 
 export default async function PlaylistPage({ params }) {
     const { id } = await params;
@@ -26,9 +28,11 @@ export default async function PlaylistPage({ params }) {
                 />
             </div>
 
+            <PlaylistActions id={playlist.id} />
+
             <div style={{ marginTop: '2rem', fontSize: '0.9rem', color: '#666' }}>
                 <p>Created: {new Date(playlist.created_at * 1000).toLocaleString()}</p>
-                <p>Share this playlist: <code style={{ background: '#eee', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{`http://localhost:3000/playlist/${playlist.id}`}</code></p>
+                <p>Share this playlist: <code style={{ background: '#eee', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{`${BASE_URL}/playlist/${playlist.id}`}</code></p>
             </div>
         </main>
     );
