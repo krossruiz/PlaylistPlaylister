@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getPlaylists } from '@/lib/db';
+import { formatTimestamp } from '@/lib/utils';
 
 // Force dynamic rendering to ensure we always get the latest playlists
 export const dynamic = 'force-dynamic';
@@ -30,7 +31,7 @@ export default async function Home() {
                         <Link href={`/playlist/${playlist.id}`} key={playlist.id} className="card" style={{ display: 'block' }}>
                             <h2 style={{ margin: '0 0 0.5rem 0' }}>{playlist.title}</h2>
                             <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-                                Created: {new Date(playlist.created_at * 1000).toLocaleDateString()}
+                                Created: {formatTimestamp(playlist.created_at)}
                             </p>
                         </Link>
                     ))
