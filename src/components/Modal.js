@@ -24,7 +24,26 @@ export default function Modal({ isOpen, title, message, onConfirm, onCancel, pla
 
     return (
         <div className="modal-overlay" onClick={onCancel}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    aria-label="Close"
+                    style={{
+                        position: 'absolute',
+                        top: '1rem',
+                        right: '1rem',
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '1.5rem',
+                        lineHeight: 1,
+                        cursor: 'pointer',
+                        color: 'var(--foreground)',
+                        padding: 0,
+                    }}
+                >
+                    &times;
+                </button>
                 <h2>{title}</h2>
                 {message && <p>{message}</p>}
 

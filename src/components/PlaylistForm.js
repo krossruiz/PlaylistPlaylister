@@ -97,6 +97,76 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
         }
     };
 
+    const handleLinkDetection = (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            const node = range.startContainer;
+
+            // Only check text nodes
+            if (node.nodeType !== Node.TEXT_NODE) return;
+
+            const content = node.textContent;
+            // Get text before cursor
+            const textBeforeCursor = content.slice(0, range.startOffset);
+
+            // Find the last word before cursor (split by whitespace)
+            const words = textBeforeCursor.split(/\s+/);
+            // The last item might be empty if we just typed space, so we want the one before it
+            let lastWord = words[words.length - 1];
+            if (!lastWord && words.length > 1) {
+                lastWord = words[words.length - 2];
+            }
+
+            if (!lastWord) return;
+
+            // URL Regex (simple)
+            const urlRegex = /^(https?:\/\/[^\s]+)$/;
+            if (urlRegex.test(lastWord)) {
+                // Determine start and end of this word in the text node
+                const endIndex = textBeforeCursor.lastIndexOf(lastWord) + lastWord.length;
+                const startIndex = textBeforeCursor.lastIndexOf(lastWord);
+
+                // Select the word
+                const newRange = document.createRange();
+                newRange.setStart(node, startIndex);
+                newRange.setEnd(node, endIndex);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+
+                // Create Link
+                document.execCommand('createLink', false, lastWord);
+
+                // After createLink, the selection is typically inside the link or at the end.
+                // We need to ensure the user can keep typing normally.
+                // Collapse to end
+                selection.collapseToEnd();
+            }
+        }
+    };
+
+
+
+    const validateSelection = () => {
+        if (mode === 'source') return true;
+        if (!savedRangeRef.current) return false;
+        if (!visualEditorRef.current) return false;
+        return visualEditorRef.current.contains(savedRangeRef.current.commonAncestorContainer);
+    };
+
+    const showCursorWarning = () => {
+        setModalConfig({
+            title: 'Cursor Position Required',
+            message: 'Please place your cursor inside the editor where you want to insert the video.',
+            onConfirm: () => setModalOpen(false),
+            // No placeholder needed for alert
+        });
+        setModalContent(true); // Truthy value suppresses default form, renders nothing extra
+        setModalOpen(true);
+    };
+
     const openModal = (title, message, placeholder, callback) => {
         saveSelection();
         setModalConfig({
@@ -119,6 +189,11 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
     };
 
     const insertYouTube = () => {
+        saveSelection();
+        if (!validateSelection()) {
+            showCursorWarning();
+            return;
+        }
         openModal(
             'Insert YouTube Video',
             'Enter YouTube URL (e.g., https://www.youtube.com/watch?v=...):',
@@ -169,6 +244,10 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
 
     const insertIPFS = () => {
         saveSelection();
+        if (!validateSelection()) {
+            showCursorWarning();
+            return;
+        }
         setModalConfig({
             title: 'Insert Video',
             message: '',
@@ -319,7 +398,6 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
                     <div className="toolbar">
                         <button type="button" onClick={insertYouTube}>Insert YouTube</button>
                         <button type="button" onClick={insertIPFS}>Insert IPFS Video</button>
-                        <button type="button" onClick={() => insertAtCursor('<a href="LINK_URL">Link</a>')}>Link</button>
                     </div>
 
                     {mode === 'source' ? (
@@ -348,6 +426,7 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
                                 const text = e.clipboardData.getData('text/plain');
                                 document.execCommand('insertText', false, text);
                             }}
+                            onKeyUp={handleLinkDetection}
                         />
                     )}
 
