@@ -10,6 +10,10 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
     const [mode, setMode] = useState('visual'); // 'visual' or 'source'
     const textareaRef = useRef(null);
     const visualEditorRef = useRef(null);
+    const toolbarRef = useRef(null);
+    const toolbarSentinelRef = useRef(null);
+    const [isToolbarFixed, setIsToolbarFixed] = useState(false);
+    const [toolbarHeight, setToolbarHeight] = useState(0);
 
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
@@ -33,6 +37,50 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
         }
     }, [initialData.content]);
 
+    // Measure toolbar height for spacer and handle sticky behavior
+    useEffect(() => {
+        if (toolbarRef.current) {
+            setToolbarHeight(toolbarRef.current.offsetHeight);
+        }
+    }, []);
+
+    // Check if toolbar should be fixed based on sentinel position
+    useEffect(() => {
+        const sentinel = toolbarSentinelRef.current;
+        if (!sentinel) return;
+
+        const checkToolbarPosition = () => {
+            const rect = sentinel.getBoundingClientRect();
+            // If sentinel is above the viewport (scrolled past), fix the toolbar
+            setIsToolbarFixed(rect.top < 0);
+        };
+
+        // Check on scroll
+        window.addEventListener('scroll', checkToolbarPosition, { passive: true });
+        // Check on resize (including keyboard open/close)
+        window.addEventListener('resize', checkToolbarPosition, { passive: true });
+        // Check on visual viewport resize (iOS Safari specific)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', checkToolbarPosition);
+            window.visualViewport.addEventListener('scroll', checkToolbarPosition);
+        }
+
+        // Periodic check for edge cases (keyboard auto-scroll)
+        const interval = setInterval(checkToolbarPosition, 200);
+
+        // Initial check
+        checkToolbarPosition();
+
+        return () => {
+            window.removeEventListener('scroll', checkToolbarPosition);
+            window.removeEventListener('resize', checkToolbarPosition);
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', checkToolbarPosition);
+                window.visualViewport.removeEventListener('scroll', checkToolbarPosition);
+            }
+            clearInterval(interval);
+        };
+    }, []);
 
     const handleModeToggle = () => {
         if (mode === 'visual') {
@@ -395,9 +443,21 @@ export default function PlaylistForm({ initialData = {}, onSubmit, loading, subm
                         </button>
                     </div>
 
-                    <div className="toolbar">
-                        <button type="button" onClick={insertYouTube}>Insert YouTube</button>
-                        <button type="button" onClick={insertIPFS}>Insert IPFS Video</button>
+                    {/* Wrap toolbar and sentinel in a container for sticky handling */}
+                    <div className="toolbar-container">
+                        {/* Sentinel element placed above the toolbar to detect scroll out of view */}
+                        <div ref={toolbarSentinelRef} style={{ height: '1px', marginBottom: '-1px' }} />
+
+                        <div
+                            ref={toolbarRef}
+                            className={`toolbar ${isToolbarFixed ? 'toolbar-fixed' : ''}`}
+                        >
+                            <button type="button" onClick={insertYouTube}>Insert YouTube</button>
+                            <button type="button" onClick={insertIPFS}>Insert IPFS Video</button>
+                        </div>
+
+                        {/* Spacer to prevent content jump when toolbar becomes fixed */}
+                        {isToolbarFixed && <div style={{ height: toolbarHeight }} />}
                     </div>
 
                     {mode === 'source' ? (
